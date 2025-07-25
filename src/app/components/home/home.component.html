@@ -1,0 +1,135 @@
+<div class="home-container">
+  <div class="welcome-section">
+    <h1>Welcome to Bitcoin Threat Intelligence Platform</h1>
+    <p class="welcome-message">Your comprehensive solution for monitoring, analyzing, and managing Bitcoin transaction risks</p>
+  </div>
+
+  <div class="stats-section">
+    <div class="section-header">
+      <h2>Overview</h2>
+      <span class="section-subtitle">Platform statistics and metrics</span>
+    </div>
+    
+    <div class="stats-grid">
+      <mat-card class="stat-card" *ngFor="let stat of statCards">
+        <mat-card-content>
+          <div class="stat-icon" [style.background-color]="stat.color + '22'">
+            <mat-icon [style.color]="stat.color">{{ stat.icon }}</mat-icon>
+          </div>
+          <div class="stat-info">
+            <div class="stat-title">{{ stat.title }}</div>
+            <div class="stat-value">{{ stat.value }}</div>
+            <div class="stat-trend" *ngIf="stat.change">
+              <mat-icon [style.color]="getTrendColor(stat.trend)">{{ getTrendIcon(stat.trend) }}</mat-icon>
+              <span [style.color]="getTrendColor(stat.trend)">{{ stat.change }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="quick-actions-section">
+    <div class="section-header">
+      <h2>Quick Actions</h2>
+      <span class="section-subtitle">Common tasks and operations</span>
+    </div>
+    
+    <div class="actions-grid">
+      <mat-card class="action-card" *ngFor="let action of quickActions" (click)="navigateTo(action.route)">
+        <mat-card-content>
+          <div class="action-icon" [style.background-color]="action.color + '22'">
+            <mat-icon [style.color]="action.color">{{ action.icon }}</mat-icon>
+          </div>
+          <div class="action-title">{{ action.title }}</div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <div class="recent-activity-section">
+      <div class="section-header">
+        <h2>Recent Activity</h2>
+        <span class="section-subtitle">Latest platform activities</span>
+      </div>
+      
+      <mat-card class="activity-card">
+        <mat-card-content>
+          <div class="activity-item" *ngFor="let activity of recentActivities">
+            <div class="activity-icon" [ngClass]="activity.type.toLowerCase()">
+              <mat-icon *ngIf="activity.type === 'Alert'">warning</mat-icon>
+              <mat-icon *ngIf="activity.type === 'Analysis'">search</mat-icon>
+              <mat-icon *ngIf="activity.type === 'Report'">description</mat-icon>
+            </div>
+            <div class="activity-content">
+              <div class="activity-header">
+                <span class="activity-type">{{ activity.type }}</span>
+                <span class="activity-time">{{ activity.timestamp }}</span>
+              </div>
+              <div class="activity-description">{{ activity.description }}</div>
+              <div class="activity-actions">
+                <button mat-button color="primary" *ngIf="activity.address" (click)="analyzeAddress(activity.address)">
+                  Analyze Address
+                </button>
+                <button mat-button color="primary" *ngIf="activity.type === 'Alert'" (click)="viewAlert(activity.id)">
+                  View Alert
+                </button>
+                <span class="risk-level" *ngIf="activity.riskLevel" [style.color]="getRiskColor(activity.riskLevel)">
+                  {{ activity.riskLevel }}
+                </span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <div class="risk-summary-section">
+      <div class="section-header">
+        <h2>Risk Summary</h2>
+        <span class="section-subtitle">Current risk assessment</span>
+      </div>
+      
+      <mat-card class="risk-card">
+        <mat-card-content>
+          <div class="risk-distribution">
+            <h3>Risk Distribution</h3>
+            <div class="risk-category" *ngFor="let risk of riskDistribution">
+              <div class="category-label">{{ risk.category }}</div>
+              <div class="category-bar">
+                <mat-progress-bar mode="determinate" [value]="risk.percentage"></mat-progress-bar>
+                <span class="category-percentage">{{ risk.percentage }}%</span>
+              </div>
+            </div>
+          </div>
+          
+          <mat-divider></mat-divider>
+          
+          <div class="recent-alerts">
+            <h3>Recent Alerts</h3>
+            <div class="alert-item" *ngFor="let alert of recentAlerts">
+              <div class="alert-indicator" [style.background-color]="getRiskColor(alert.riskLevel)"></div>
+              <div class="alert-content">
+                <div class="alert-title">{{ alert.title }}</div>
+                <div class="alert-description">{{ alert.description }}</div>
+                <div class="alert-footer">
+                  <span class="alert-time">{{ alert.timestamp }}</span>
+                  <button mat-button color="primary" (click)="viewAlert(alert.id)">View</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="view-all-button">
+              <button mat-button color="primary" (click)="navigateTo('/alerts')">
+                View All Alerts
+                <mat-icon>arrow_forward</mat-icon>
+              </button>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+</div>
+
