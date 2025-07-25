@@ -1,0 +1,46 @@
+.alert-statistics {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.alert-statistics .stat-card {
+  flex: 1;
+  min-width: 200px;
+  background-color: #1e1e2d !important;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 16px;
+  text-align: center;
+}
+
+.alert-statistics .stat-number {
+  font-size: 32px;
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.alert-statistics .critical {
+  color: #F44336 !important;
+}
+
+.alert-statistics .high-risk {
+  color: #FF5722 !important;
+}
+
+.alert-statistics .medium-risk {
+  color: #FF9800 !important;
+}
+
+.alert-statistics .active {
+  color: #4CAF50 !important;
+}
+
+.alert-statistics .stat-label {
+  color: #b0bec5;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+

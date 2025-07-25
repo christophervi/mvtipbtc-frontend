@@ -1,0 +1,426 @@
+<div class="settings-container">
+  <mat-card class="settings-header-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>settings</mat-icon>
+        Account Settings
+      </mat-card-title>
+      <mat-card-subtitle>Manage your account preferences and security settings</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <mat-tab-group class="settings-tabs" animationDuration="300ms">
+    
+    <!-- Profile Tab -->
+    <mat-tab label="Profile">
+      <div class="tab-content">
+        <mat-card class="profile-card">
+          <mat-card-header>
+            <mat-card-title>Profile Information</mat-card-title>
+            <mat-card-subtitle>Update your personal information</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>First Name</mat-label>
+                  <input matInput formControlName="firstName">
+                  <mat-icon matSuffix>person</mat-icon>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Last Name</mat-label>
+                  <input matInput formControlName="lastName">
+                </mat-form-field>
+              </div>
+              
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Email</mat-label>
+                  <input matInput type="email" formControlName="email">
+                  <mat-icon matSuffix>email</mat-icon>
+                </mat-form-field>
+                
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Organization</mat-label>
+                  <input matInput formControlName="organization">
+                  <mat-icon matSuffix>business</mat-icon>
+                </mat-form-field>
+              </div>
+              
+              <div class="form-row">
+                <mat-form-field appearance="outline" class="form-field">
+                  <mat-label>Role</mat-label>
+                  <input matInput formControlName="role" readonly>
+                  <mat-icon matSuffix>badge</mat-icon>
+                </mat-form-field>
+              </div>
+              
+              <div class="form-actions">
+                <button mat-raised-button color="primary" type="submit" 
+                        [disabled]="profileForm.invalid">
+                  <mat-icon>save</mat-icon>
+                  Update Profile
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="account-info-card">
+          <mat-card-header>
+            <mat-card-title>Account Information</mat-card-title>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="info-grid">
+              <div class="info-item">
+                <div class="info-label">Username</div>
+                <div class="info-value">{{userProfile.username}}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Account Age</div>
+                <div class="info-value">{{getAccountAge()}}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Last Login</div>
+                <div class="info-value">{{getLastLogin()}}</div>
+              </div>
+              <div class="info-item">
+                <div class="info-label">Active Sessions</div>
+                <div class="info-value">{{getActiveSessionsCount()}}</div>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Security Tab -->
+    <mat-tab label="Security">
+      <div class="tab-content">
+        <mat-card class="password-card">
+          <mat-card-header>
+            <mat-card-title>Change Password</mat-card-title>
+            <mat-card-subtitle>Update your account password</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <form [formGroup]="passwordForm" (ngSubmit)="changePassword()">
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Current Password</mat-label>
+                <input matInput type="password" formControlName="currentPassword">
+                <mat-icon matSuffix>lock</mat-icon>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>New Password</mat-label>
+                <input matInput type="password" formControlName="newPassword">
+                <mat-icon matSuffix>lock_open</mat-icon>
+              </mat-form-field>
+              
+              <mat-form-field appearance="outline" class="form-field">
+                <mat-label>Confirm New Password</mat-label>
+                <input matInput type="password" formControlName="confirmPassword">
+                <mat-icon matSuffix>lock_open</mat-icon>
+                <mat-error *ngIf="passwordForm.get('confirmPassword')?.hasError('passwordMismatch')">
+                  Passwords do not match
+                </mat-error>
+              </mat-form-field>
+              
+              <div class="form-actions">
+                <button mat-raised-button color="primary" type="submit" 
+                        [disabled]="passwordForm.invalid">
+                  <mat-icon>security</mat-icon>
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="security-settings-card">
+          <mat-card-header>
+            <mat-card-title>Security Settings</mat-card-title>
+            <mat-card-subtitle>Configure security preferences</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="security-option">
+              <div class="option-info">
+                <div class="option-title">Two-Factor Authentication</div>
+                <div class="option-description">Add an extra layer of security to your account</div>
+              </div>
+              <div class="option-control">
+                <mat-slide-toggle [(ngModel)]="securitySettings.twoFactorAuth"
+                                  (change)="securitySettings.twoFactorAuth ? enableTwoFactorAuth() : disableTwoFactorAuth()">
+                </mat-slide-toggle>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="security-option">
+              <div class="option-info">
+                <div class="option-title">Login Notifications</div>
+                <div class="option-description">Receive notifications for new login attempts</div>
+              </div>
+              <div class="option-control">
+                <mat-slide-toggle [(ngModel)]="securitySettings.loginNotifications"
+                                  (change)="updateSecuritySettings()">
+                </mat-slide-toggle>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="security-option">
+              <div class="option-info">
+                <div class="option-title">Session Timeout</div>
+                <div class="option-description">Automatically log out after inactivity</div>
+              </div>
+              <div class="option-control">
+                <mat-form-field appearance="outline" class="timeout-field">
+                  <mat-select [(value)]="securitySettings.sessionTimeout" 
+                              (selectionChange)="updateSecuritySettings()">
+                    <mat-option *ngFor="let option of sessionTimeoutOptions" [value]="option.value">
+                      {{option.label}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="security-option">
+              <div class="option-info">
+                <div class="option-title">Password Expiry</div>
+                <div class="option-description">Require password change after specified period</div>
+              </div>
+              <div class="option-control">
+                <mat-form-field appearance="outline" class="timeout-field">
+                  <mat-select [(value)]="securitySettings.passwordExpiry" 
+                              (selectionChange)="updateSecuritySettings()">
+                    <mat-option *ngFor="let option of passwordExpiryOptions" [value]="option.value">
+                      {{option.label}}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Notifications Tab -->
+    <mat-tab label="Notifications">
+      <div class="tab-content">
+        <mat-card class="notifications-card">
+          <mat-card-header>
+            <mat-card-title>Notification Preferences</mat-card-title>
+            <mat-card-subtitle>Choose how you want to be notified</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="notification-section">
+              <h3 class="alert-notifications">Alert Notifications</h3>
+              
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Critical Alerts</div>
+                  <div class="option-description">Immediate notifications for critical security threats</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.criticalAlerts"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">High Risk Alerts</div>
+                  <div class="option-description">Notifications for high-risk transactions</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.highRiskAlerts"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Medium Risk Alerts</div>
+                  <div class="option-description">Notifications for medium-risk activities</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.mediumRiskAlerts"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="notification-section">
+              <h3 class="system-notifications">System Notifications</h3>
+              
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Email Alerts</div>
+                  <div class="option-description">Receive notifications via email</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.emailAlerts"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Push Notifications</div>
+                  <div class="option-description">Browser push notifications</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.pushNotifications"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Report Generation</div>
+                  <div class="option-description">Notifications when reports are ready</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.reportGeneration"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+
+              <div class="notification-option">
+                <div class="option-info">
+                  <div class="option-title">Weekly Digest</div>
+                  <div class="option-description">Weekly summary of activities</div>
+                </div>
+                <div class="option-control">
+                  <mat-slide-toggle [(ngModel)]="notificationSettings.weeklyDigest"
+                                    (change)="updateNotificationSettings()">
+                  </mat-slide-toggle>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button mat-raised-button color="primary">Save Preferences</button>
+              <button mat-button class="test-notifications-button">
+                <mat-icon>notifications</mat-icon>
+                Test Notifications
+              </button>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- Advanced Tab -->
+    <mat-tab label="Advanced">
+      <div class="tab-content">
+        <mat-card class="data-management-card">
+          <mat-card-header>
+            <mat-card-title>Data Management</mat-card-title>
+            <mat-card-subtitle>Manage your data and privacy settings</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="action-item">
+              <div class="action-info">
+                <div class="action-title">Export Data</div>
+                <div class="action-description">Download all your data in a portable format</div>
+              </div>
+              <div class="action-control">
+                <button mat-raised-button color="primary" (click)="exportData()">
+                  <mat-icon>download</mat-icon>
+                  Export
+                </button>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="action-item">
+              <div class="action-info">
+                <div class="action-title">Activity Log</div>
+                <div class="action-description">Download your account activity history</div>
+              </div>
+              <div class="action-control">
+                <button mat-raised-button (click)="downloadActivityLog()">
+                  <mat-icon>history</mat-icon>
+                  Download
+                </button>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="action-item">
+              <div class="action-info">
+                <div class="action-title">Clear Cache</div>
+                <div class="action-description">Clear application cache and stored data</div>
+              </div>
+              <div class="action-control">
+                <button mat-raised-button (click)="clearCache()">
+                  <mat-icon>clear_all</mat-icon>
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <mat-divider></mat-divider>
+
+            <div class="action-item">
+              <div class="action-info">
+                <div class="action-title">Reset Settings</div>
+                <div class="action-description">Reset all settings to default values</div>
+              </div>
+              <div class="action-control">
+                <button mat-raised-button color="accent" (click)="resetToDefaults()">
+                  <mat-icon>restore</mat-icon>
+                  Reset
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+
+        <mat-card class="danger-zone-card">
+          <mat-card-header>
+            <mat-card-title class="danger-title">
+              <mat-icon>warning</mat-icon>
+              Danger Zone
+            </mat-card-title>
+            <mat-card-subtitle>Irreversible actions</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <div class="action-item">
+              <div class="action-info">
+                <div class="action-title">Delete Account</div>
+                <div class="action-description">Permanently delete your account and all associated data</div>
+              </div>
+              <div class="action-control">
+                <button mat-raised-button color="warn" (click)="deleteAccount()">
+                  <mat-icon>delete_forever</mat-icon>
+                  Delete Account
+                </button>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+</div>
+

@@ -1,0 +1,61 @@
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <mat-card-header>
+        <div class="header-content">
+          <mat-icon class="logo-icon">security</mat-icon>
+          <mat-card-title>Bitcoin Threat Intel</mat-card-title>
+          <mat-card-subtitle>Sign in to your account</mat-card-subtitle>
+        </div>
+      </mat-card-header>
+      
+      <mat-card-content>
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput type="email" formControlName="email" placeholder="Enter your email">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('email')?.hasError('email')">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+          
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Password</mat-label>
+            <input matInput [type]="hidePassword ? 'password' : 'text'" formControlName="password" placeholder="Enter your password">
+            <button mat-icon-button matSuffix (click)="hidePassword = !hidePassword" type="button">
+              <mat-icon>{{hidePassword ? 'visibility_off' : 'visibility'}}</mat-icon>
+            </button>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('required')">
+              Password is required
+            </mat-error>
+            <mat-error *ngIf="loginForm.get('password')?.hasError('minlength')">
+              Password must be at least 6 characters
+            </mat-error>
+          </mat-form-field>
+          
+          <div class="error-message" *ngIf="errorMessage">
+            <mat-icon>error</mat-icon>
+            <span>{{ errorMessage }}</span>
+          </div>
+          
+          <button mat-raised-button color="primary" type="submit" class="full-width login-button" [disabled]="!loginForm.valid || isLoading">
+            <span *ngIf="!isLoading">Sign In</span>
+            <span *ngIf="isLoading">Signing In...</span>
+          </button>
+        </form>
+      </mat-card-content>
+      
+      <mat-card-actions class="card-actions">
+        <p class="register-text">
+          Don't have an account? 
+          <button mat-button color="accent" (click)="navigateToRegister()">Sign Up</button>
+        </p>
+      </mat-card-actions>
+    </mat-card>
+  </div>
+</div>
+

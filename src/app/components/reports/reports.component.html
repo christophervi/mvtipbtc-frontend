@@ -1,0 +1,185 @@
+<div class="reports-container">
+  <mat-card class="reports-header-card">
+    <mat-card-header>
+      <mat-card-title>
+        <mat-icon>description</mat-icon>
+        Threat Intelligence Reports
+      </mat-card-title>
+      <mat-card-subtitle>Generate, manage, and download comprehensive threat analysis reports</mat-card-subtitle>
+    </mat-card-header>
+  </mat-card>
+
+  <mat-card class="generate-report-card">
+    <mat-card-header>
+      <mat-card-title>Generate New Report</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="generate-report-form">
+        <mat-form-field appearance="outline" class="address-field">
+          <mat-label>Bitcoin Address</mat-label>
+          <input matInput [(ngModel)]="newReportAddress" 
+                 placeholder="Enter Bitcoin address to analyze"
+                 [disabled]="isGeneratingReport">
+          <mat-icon matSuffix>account_balance_wallet</mat-icon>
+        </mat-form-field>
+        
+        <button mat-raised-button color="primary" 
+                (click)="generateReport()"
+                [disabled]="!newReportAddress.trim() || isGeneratingReport"
+                class="generate-button">
+          <mat-spinner diameter="20" *ngIf="isGeneratingReport"></mat-spinner>
+          <mat-icon *ngIf="!isGeneratingReport">add</mat-icon>
+          {{isGeneratingReport ? 'Generating...' : 'Generate Report'}}
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="filters-card">
+    <mat-card-content>
+      <div class="filters-row">
+        <mat-form-field appearance="outline" class="filter-field">
+          <mat-label>Report Type</mat-label>
+          <mat-select [(value)]="selectedReportType" (selectionChange)="filterByReportType()">
+            <mat-option *ngFor="let type of reportTypes" [value]="type">
+              {{type}}
+            </mat-option>
+          </mat-select>
+        </mat-form-field>
+
+        <button mat-raised-button color="primary" (click)="loadReports()">
+          <mat-icon>refresh</mat-icon>
+          Refresh
+        </button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="reports-table-card">
+    <mat-card-content>
+      <table mat-table [dataSource]="dataSource" class="reports-table" matSort>
+        
+        <ng-container matColumnDef="fileName">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>File Name</th>
+          <td mat-cell *matCellDef="let report" class="filename-cell">
+            <mat-icon class="file-icon">picture_as_pdf</mat-icon>
+            <div class="filename-info">
+              <div class="filename">{{report.fileName}}</div>
+              <div class="file-path">{{report.s3Key}}</div>
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="address">
+          <th mat-header-cell *matHeaderCellDef>Address</th>
+          <td mat-cell *matCellDef="let report" class="address-cell">
+            <code class="bitcoin-address">{{report.address}}</code>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="reportType">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Type</th>
+          <td mat-cell *matCellDef="let report">
+            <mat-chip [color]="getReportTypeColor(report.reportType)" selected>
+              <mat-icon class="chip-icon">{{getReportTypeIcon(report.reportType)}}</mat-icon>
+              {{report.reportType}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="createdAt">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+          <td mat-cell *matCellDef="let report">
+            <div class="timestamp">
+              {{report.createdAt | date:'short'}}
+            </div>
+            <div class="time-ago">
+              {{getTimeAgo(report.createdAt)}}
+            </div>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="fileSize">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Size</th>
+          <td mat-cell *matCellDef="let report" class="file-size">
+            {{report.fileSize}}
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Status</th>
+          <td mat-cell *matCellDef="let report">
+            <mat-chip [color]="getStatusColor(report.status)" selected>
+              {{report.status}}
+            </mat-chip>
+          </td>
+        </ng-container>
+
+        <ng-container matColumnDef="actions">
+          <th mat-header-cell *matHeaderCellDef>Actions</th>
+          <td mat-cell *matCellDef="let report">
+            <button mat-icon-button (click)="viewReport(report)" 
+                    matTooltip="View report">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button (click)="downloadReport(report)" 
+                    matTooltip="Download report">
+              <mat-icon>download</mat-icon>
+            </button>
+            <button mat-icon-button (click)="shareReport(report)" 
+                    matTooltip="Share report">
+              <mat-icon>share</mat-icon>
+            </button>
+            <button mat-icon-button (click)="deleteReport(report)" 
+                    matTooltip="Delete report"
+                    color="warn">
+              <mat-icon>delete</mat-icon>
+            </button>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <mat-paginator [pageSizeOptions]="[5, 10, 20]" showFirstLastButtons></mat-paginator>
+    </mat-card-content>
+  </mat-card>
+
+  <mat-card class="reports-stats-card" *ngIf="dataSource.data.length > 0">
+    <mat-card-header>
+      <mat-card-title>Report Statistics</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-number total">{{getTotalReportsCount()}}</div>
+          <div class="stat-label">Total Reports</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number recent">{{getRecentReportsCount()}}</div>
+          <div class="stat-label">Last 24 Hours</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number size">{{getTotalFileSize()}}</div>
+          <div class="stat-label">Total Size</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-number ready">{{getReadyReportsCount()}}</div>
+          <div class="stat-label">Ready</div>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <div class="empty-state" *ngIf="dataSource.data.length === 0">
+    <mat-card>
+      <mat-card-content class="empty-content">
+        <mat-icon class="empty-icon">description</mat-icon>
+        <h3>No Reports Generated</h3>
+        <p>Generate your first threat intelligence report by entering a Bitcoin address above.</p>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>
+
